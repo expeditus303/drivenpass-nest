@@ -1,30 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
+import * as bcrypt from 'bcrypt';
+import { SignInDto } from './dto/sign-in.dto';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private jwtService: JwtService,
+  ) {}
 
-  constructor(private readonly usersRepository: UsersRepository) {}
+  async signUp(createUserDto: CreateUserDto) {
+    const isEmailAlreadyRegistered = await this.usersRepository.findUserByEmail(
+      createUserDto.email,
+    );
 
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+    if (isEmailAlreadyRegistered)
+      throw new ConflictException('Email address is already registered.');
+
+    const encryptedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    const processedUserDto = {
+      email: createUserDto.email,
+      encryptedPassword: encryptedPassword,
+    };
+
+    const newUser = await this.usersRepository.create(processedUserDto);
+
+    return newUser;
   }
 
-  findAll() {
-    return `This action returns all users`;
-  }
+  async signIn(signInDto: SignInDto) {
+    const foundUser = await this.usersRepository.findUserByEmail(
+      signInDto.email,
+    );
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+    if (!foundUser)
+      throw new UnauthorizedException('Email or password is incorrect.');
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+    const passwordIsValid = await bcrypt.compare(
+      signInDto.password,
+      foundUser.encryptedPassword,
+    );
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    if (!passwordIsValid)
+      throw new UnauthorizedException('Email or password is incorrect.');
+
+    const payload: JwtPayload = { id: foundUser.id, email: foundUser.email };
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
