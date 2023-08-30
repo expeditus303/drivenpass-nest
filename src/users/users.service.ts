@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { SignUpDto } from './dto/create-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { SignInDto } from './dto/sign-in.dto';
@@ -12,12 +12,17 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
+
+  private EXPIRATION_TIME = '7 days';
+  private ISSUER = 'DrivenPass';
+  private AUDIENCE = 'users';
+
   constructor(
     private readonly usersRepository: UsersRepository,
     private jwtService: JwtService,
   ) {}
 
-  async signUp(createUserDto: CreateUserDto) {
+  async signUp(createUserDto: SignUpDto) {
     const isEmailAlreadyRegistered = await this.usersRepository.findUserByEmail(
       createUserDto.email,
     );
@@ -32,9 +37,9 @@ export class UsersService {
       encryptedPassword: encryptedPassword,
     };
 
-    const newUser = await this.usersRepository.create(processedUserDto);
+    await this.usersRepository.create(processedUserDto);
 
-    return newUser;
+    return { message: 'User successfully registered.' };
   }
 
   async signIn(signInDto: SignInDto) {
@@ -56,7 +61,11 @@ export class UsersService {
     const payload: JwtPayload = { id: foundUser.id, email: foundUser.email };
 
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        expiresIn: this.EXPIRATION_TIME,
+        issuer: this.ISSUER,
+        audience: this.AUDIENCE,
+      }),
     };
   }
 }

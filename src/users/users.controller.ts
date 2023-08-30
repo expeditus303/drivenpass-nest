@@ -4,9 +4,11 @@ import {
   Body,
   Get,
   Request,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { SignUpDto } from './dto/create-user.dto';
 import { SignInDto } from './dto/sign-in.dto';
 // import { UseGuards } from '@nestjs/common';
 // import { AuthGuard } from '../auth.guard';
@@ -17,19 +19,15 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('sign-up')
-  signUp(@Body() createUserDto: CreateUserDto) {
+  @HttpCode(HttpStatus.CREATED)
+  signUp(@Body() createUserDto: SignUpDto) {
     return this.usersService.signUp(createUserDto);
   }
 
   @Post('sign-in')
+  @HttpCode(HttpStatus.OK)
   signIn(@Body() signInDto: SignInDto) {
     return this.usersService.signIn(signInDto);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Get()
-  // testss(@Request() req) {
-  //   const user = req.user
-  //   return user
-  // }
 }
