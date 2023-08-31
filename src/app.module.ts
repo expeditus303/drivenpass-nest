@@ -15,7 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
     CredentialsModule,
     JwtModule.register({
-      secret: process.env.SECRET_KEY,
+      secret: process.env.JWT_SECRET_KEY,
     }),
   ],
   controllers: [AppController],

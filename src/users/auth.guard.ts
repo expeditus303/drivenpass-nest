@@ -21,11 +21,9 @@ import {
         const payload = await this.jwtService.verifyAsync(  
           token,
           {
-            secret: process.env.SECRET_KEY
+            secret: process.env.JWT_SECRET_KEY
           }
         );
-
-        console.log(payload);
 
         request['user'] = payload;
       } catch {

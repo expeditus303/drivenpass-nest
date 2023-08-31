@@ -11,23 +11,23 @@ datasource db {
 }
 
 model User {
-  id          Int          @id @default(autoincrement())
-  email       String       @unique
-  encryptedPassword    String
-  Credentials Credential[]
-  Notes       Note[]
-  Cards       Card[]
+  id                Int          @id @default(autoincrement())
+  email             String       @unique
+  encryptedPassword String
+  Credentials       Credential[]
+  Notes             Note[]
+  Cards             Card[]
 
   @@map("users")
 }
 
 model Credential {
-  id       Int    @id @default(autoincrement())
-  userId   Int
-  User     User   @relation(fields: [userId], references: [id])
-  title    String
-  url      String
-  username String
+  id                Int    @id @default(autoincrement())
+  userId            Int
+  User              User   @relation(fields: [userId], references: [id])
+  title             String
+  url               String
+  username          String
   encryptedPassword String
 
   @@unique([title, userId])
@@ -46,18 +46,18 @@ model Note {
 }
 
 model Card {
-  id             Int    @id @default(autoincrement())
-  userId         Int
-  user           User   @relation(fields: [userId], references: [id])
-  title       String
-  cardHolder  String
-  encryptedCardNumber  String 
-  encryptedCVC         String 
-  expiryMonth Int
-  expiryYear  Int
-  encryptedPassword    String 
-  isVirtual   Boolean @default(false) 
-  cardType    CardType 
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  user                User     @relation(fields: [userId], references: [id])
+  title               String
+  cardHolder          String
+  encryptedCardNumber String
+  encryptedCVC        String
+  expiryMonth         Int
+  expiryYear          Int
+  encryptedPassword   String
+  isVirtual           Boolean  @default(false)
+  cardType            CardType
 
   @@unique([title, userId])
   @@map("cards")
