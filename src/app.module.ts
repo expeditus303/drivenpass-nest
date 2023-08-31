@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { JwtModule } from '@nestjs/jwt';
+import { NotesModule } from './notes/notes.module';
 
 @Global()
 @Module({
@@ -17,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({
       secret: process.env.JWT_SECRET_KEY,
     }),
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
