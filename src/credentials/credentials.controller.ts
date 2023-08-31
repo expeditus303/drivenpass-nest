@@ -29,8 +29,8 @@ export class CredentialsController {
   }
 
   @Get()
-  findAll() {
-    return this.credentialsService.findAll();
+  findAll(@User() user: JwtPayload) {
+    return this.credentialsService.findAll(user);
   }
 
   @Get(':id')

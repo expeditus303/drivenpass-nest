@@ -31,13 +31,29 @@ export class CredentialsService {
       encryptedPassword,
     );
 
-    await this.credentialsRepository.create(processedCredentialDto, user.id)
+    await this.credentialsRepository.create(processedCredentialDto, user.id);
 
     return { message: 'Credential successfully registered.' };
   }
 
-  findAll() {
-    return `This action returns all credentials`;
+  async findAll(user: JwtPayload) {
+    const userCredentials = await this.credentialsRepository.findAll(user.id);
+
+    const userCredentialsDecrypted = await Promise.all(
+      userCredentials.map(async (credential) => {
+        try {
+          const password = await decrypt(credential.encryptedPassword);
+          const { encryptedPassword, ...rest } = credential;
+          return { ...rest, password };
+        } catch (error) {
+          return {
+            message: `Failed to decrypt password for credential with title: ${credential.title}`,
+          };
+        }
+      }),
+    );
+
+    return userCredentialsDecrypted;
   }
 
   findOne(id: number) {

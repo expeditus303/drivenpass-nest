@@ -30,8 +30,12 @@ export class CredentialsRepository {
     });
   }
 
-  findAll() {
-    return `This action returns all credentials`;
+  findAll(userId: number) {
+    return this.prisma.credential.findMany({
+      where: {
+        userId: userId
+      }
+    })
   }
 
   findOne(id: number) {
