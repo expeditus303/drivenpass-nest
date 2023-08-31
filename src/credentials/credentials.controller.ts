@@ -23,31 +23,23 @@ export class CredentialsController {
   @Post()
   create(
     @Body() createCredentialDto: CreateCredentialDto,
-    @User() user: JwtPayload,
+    @User() authenticatedUser: JwtPayload,
   ) {
-    return this.credentialsService.create(createCredentialDto, user);
+    return this.credentialsService.create(createCredentialDto, authenticatedUser);
   }
 
   @Get()
-  findAll(@User() user: JwtPayload) {
-    return this.credentialsService.findAll(user);
+  findAll(@User() authenticatedUser: JwtPayload) {
+    return this.credentialsService.findAll(authenticatedUser);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @User() user: JwtPayload) {
-    return this.credentialsService.findOne(+id, user);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateCredentialDto: UpdateCredentialDto,
-  ) {
-    return this.credentialsService.update(+id, updateCredentialDto);
+  findOne(@Param('id') id: string, @User() authenticatedUser: JwtPayload) {
+    return this.credentialsService.findOne(+id, authenticatedUser);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.credentialsService.remove(+id);
+  remove(@Param('id') id: string, @User() authenticatedUser: JwtPayload) {
+    return this.credentialsService.remove(+id, authenticatedUser);
   }
 }

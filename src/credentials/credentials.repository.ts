@@ -38,7 +38,7 @@ export class CredentialsRepository {
     })
   }
 
-  findOne(id: number) {
+  findById(id: number) {
     return this.prisma.credential.findFirst({
       where: {
         id: id
@@ -50,7 +50,14 @@ export class CredentialsRepository {
     return `This action updates a #${id} credential`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} credential`;
+  remove(id: number, userId: number) {
+    return this.prisma.credential.delete({
+      where: {
+        id: id,
+        AND: {
+          userId: userId,
+        },
+      },
+    });
   }
 }

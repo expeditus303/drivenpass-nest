@@ -18,10 +18,13 @@ import { decrypt, encrypt } from '../utils/encryption.utils';
 export class CredentialsService {
   constructor(private readonly credentialsRepository: CredentialsRepository) {}
 
-  async create(createCredentialDto: CreateCredentialDto, user: JwtPayload) {
+  async create(
+    createCredentialDto: CreateCredentialDto,
+    authenticatedUser: JwtPayload,
+  ) {
     const isTitleOwnedByUser = await this.credentialsRepository.findTitleByUser(
       createCredentialDto.title,
-      user.id,
+      authenticatedUser.id,
     );
 
     if (isTitleOwnedByUser)
@@ -36,20 +39,32 @@ export class CredentialsService {
       encryptedPassword,
     );
 
-    await this.credentialsRepository.create(processedCredentialDto, user.id);
+    await this.credentialsRepository.create(
+      processedCredentialDto,
+      authenticatedUser.id,
+    );
 
-    return { message: 'Credential successfully registered.' };
+    return {
+      message: `Credential '${createCredentialDto.title}' successfully registered.`,
+    };
   }
 
-  async findAll(user: JwtPayload) {
-    const userCredentials = await this.credentialsRepository.findAll(user.id);
+  async findAll(authenticatedUser: JwtPayload) {
+    const userCredentials = await this.credentialsRepository.findAll(
+      authenticatedUser.id,
+    );
 
     const userCredentialsDecrypted = await Promise.all(
       userCredentials.map(async (credential) => {
         try {
-          const password = await decrypt(credential.encryptedPassword);
-          const { encryptedPassword, ...rest } = credential;
-          return { ...rest, password };
+          const decryptedPassword = await decrypt(credential.encryptedPassword);
+          const { encryptedPassword, ...credentialsWithoutEncryptedPassword } =
+            credential;
+          const decryptedCredentials = {
+            ...credentialsWithoutEncryptedPassword,
+            password: decryptedPassword,
+          };
+          return decryptedCredentials;
         } catch (error) {
           return {
             message: `Failed to decrypt password for credential with title: ${credential.title}`,
@@ -61,28 +76,31 @@ export class CredentialsService {
     return userCredentialsDecrypted;
   }
 
-  async findOne(id: number, user: JwtPayload) {
-    const credential = await this.credentialsRepository.findOne(id);
+  async findOne(id: number, authenticatedUser: JwtPayload) {
+    const userCredential = await this.getUserCredential(id, authenticatedUser)
 
-    if (!credential) throw new NotFoundException();
+    const decryptedPassword = await decrypt(userCredential.encryptedPassword);
 
-    if (credential.userId !== user.id) throw new ForbiddenException();
-
-    const password = await decrypt(credential.encryptedPassword);
-
-    const { encryptedPassword, ...rest } = credential;
-    return { ...rest, password };
+    const { encryptedPassword, ...credentialWithoutEncryptedPassword } =
+      userCredential;
+    const decryptedCredential = {
+      ...credentialWithoutEncryptedPassword,
+      password: decryptedPassword,
+    };
+    return decryptedCredential;
   }
 
-  update(id: number, updateCredentialDto: UpdateCredentialDto) {
-    return `This action updates a #${id} credential`;
+  async remove(id: number, authenticatedUser: JwtPayload) {
+    const userCredential = await this.getUserCredential(id, authenticatedUser)
+
+    await this.credentialsRepository.remove(id, authenticatedUser.id);
+
+    return {
+      message: `Credential '${userCredential.title}' successfully removed.`,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} credential`;
-  }
-
-  transformToProcessedDto(
+  private transformToProcessedDto(
     createCredentialDto: CreateCredentialDto,
     encryptedPassword: string,
   ): ProcessedCredentialDto {
@@ -91,5 +109,18 @@ export class CredentialsService {
       ...rest,
       encryptedPassword,
     };
+  }
+
+  private async getUserCredential(id: number, authenticatedUser: JwtPayload) {
+    const userCredential = await this.credentialsRepository.findById(id);
+
+    if (!userCredential) throw new NotFoundException('Credential not found.');
+
+    if (userCredential.userId !== authenticatedUser.id)
+      throw new ForbiddenException(
+        'You do not have permission to access this credential.',
+      );
+
+    return userCredential;
   }
 }
