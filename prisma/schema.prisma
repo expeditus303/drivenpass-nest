@@ -35,11 +35,11 @@ model Credential {
 }
 
 model Note {
-  id     Int    @id @default(autoincrement())
-  userId Int
-  User   User   @relation(fields: [userId], references: [id])
-  title  String
-  text   String
+  id            Int    @id @default(autoincrement())
+  userId        Int
+  User          User   @relation(fields: [userId], references: [id])
+  title         String
+  encryptedText String
 
   @@unique([title, userId])
   @@map("notes")
