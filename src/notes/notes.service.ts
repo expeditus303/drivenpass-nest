@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNoteDto, ProcessedNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesRepository } from './notes.repository';
@@ -64,8 +64,18 @@ export class NotesService {
     return userNotesDecrypted;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} note`;
+  async findOne(id: number, authenticatedUser: JwtPayload) {
+    const userCredential = await this.getUserNotes(id, authenticatedUser)
+
+    const decryptedText = await decrypt(userCredential.encryptedText);
+
+    const { encryptedText, ...noteWithoutEncryptedText } =
+      userCredential;
+    const decryptedNote = {
+      ...noteWithoutEncryptedText,
+      text: decryptedText,
+    };
+    return decryptedNote;
   }
 
   update(id: number, updateNoteDto: UpdateNoteDto) {
@@ -85,5 +95,18 @@ export class NotesService {
       ...noteWithoutText,
       encryptedText: encryptedText,
     };
+  }
+
+  private async getUserNotes(id: number, authenticatedUser: JwtPayload) {
+    const userNote = await this.notesRepository.findById(id);
+
+    if (!userNote) throw new NotFoundException('Note not found.');
+
+    if (userNote.userId !== authenticatedUser.id)
+      throw new ForbiddenException(
+        'You do not have permission to access this note.',
+      );
+
+    return userNote;
   }
 }

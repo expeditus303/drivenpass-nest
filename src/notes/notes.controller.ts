@@ -34,8 +34,8 @@ export class NotesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.notesService.findOne(+id);
+  findOne(@Param('id') id: string, @User() authenticatedUser: JwtPayload) {
+    return this.notesService.findOne(+id, authenticatedUser);
   }
 
   @Patch(':id')

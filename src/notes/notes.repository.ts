@@ -36,8 +36,12 @@ export class NotesRepository {
     })
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} note`;
+  findById(id: number) {
+    return this.prisma.note.findFirst({
+      where: {
+        id: id
+      }
+    })
   }
 
   update(id: number, updateNoteDto: UpdateNoteDto) {
