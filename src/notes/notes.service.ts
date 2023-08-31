@@ -78,12 +78,14 @@ export class NotesService {
     return decryptedNote;
   }
 
-  update(id: number, updateNoteDto: UpdateNoteDto) {
-    return `This action updates a #${id} note`;
-  }
+  async remove(id: number, authenticatedUser: JwtPayload) {
+    const userNote = await this.getUserNotes(id, authenticatedUser)
 
-  remove(id: number) {
-    return `This action removes a #${id} note`;
+    await this.notesRepository.remove(id, authenticatedUser.id);
+
+    return {
+      message: `Note '${userNote.title}' successfully removed.`,
+    };
   }
 
   private transformToProcessedDto(

@@ -5,7 +5,6 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class NotesRepository {
-
   constructor(private readonly prisma: PrismaService) {}
 
   findTitleByUser(title: string, userId: number) {
@@ -23,32 +22,35 @@ export class NotesRepository {
       data: {
         userId: userId,
         title: processedNoteDto.title,
-        encryptedText: processedNoteDto.encryptedText
-      }
-    })
+        encryptedText: processedNoteDto.encryptedText,
+      },
+    });
   }
 
   findAll(userId: number) {
     return this.prisma.note.findMany({
       where: {
-        userId: userId
-      }
-    })
+        userId: userId,
+      },
+    });
   }
 
   findById(id: number) {
     return this.prisma.note.findFirst({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
   }
 
-  update(id: number, updateNoteDto: UpdateNoteDto) {
-    return `This action updates a #${id} note`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} note`;
+  remove(id: number, userId: number) {
+    return this.prisma.note.delete({
+      where: {
+        id: id,
+        AND: {
+          userId: userId,
+        },
+      },
+    });
   }
 }

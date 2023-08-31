@@ -46,10 +46,6 @@ export class CredentialsRepository {
     })
   }
 
-  update(id: number, updateCredentialDto: UpdateCredentialDto) {
-    return `This action updates a #${id} credential`;
-  }
-
   remove(id: number, userId: number) {
     return this.prisma.credential.delete({
       where: {
