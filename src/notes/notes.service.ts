@@ -3,7 +3,7 @@ import { CreateNoteDto, ProcessedNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesRepository } from './notes.repository';
 import { JwtPayload } from '../users/entities/user.entity';
-import { encrypt } from '../utils/encryption.utils';
+import { decrypt, encrypt } from '../utils/encryption.utils';
 
 @Injectable()
 export class NotesService {
@@ -37,8 +37,31 @@ export class NotesService {
     };
   }
 
-  findAll() {
-    return `This action returns all notes`;
+  async findAll(authenticatedUser: JwtPayload) {
+    const userNotes = await this.notesRepository.findAll(
+      authenticatedUser.id,
+    );
+
+    const userNotesDecrypted = await Promise.all(
+      userNotes.map(async (note) => {
+        try {
+          const decryptedText = await decrypt(note.encryptedText);
+          const { encryptedText, ...notesWithoutEncryptedText } =
+            note;
+          const decryptedNotes: CreateNoteDto = {
+            ...notesWithoutEncryptedText,
+            text: decryptedText,
+          };
+          return decryptedNotes;
+        } catch (error) {
+          return {
+            message: `Failed to decrypt text for note with title: ${note.title}`,
+          };
+        }
+      }),
+    );
+
+    return userNotesDecrypted;
   }
 
   findOne(id: number) {

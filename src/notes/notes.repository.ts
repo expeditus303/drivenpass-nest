@@ -28,8 +28,12 @@ export class NotesRepository {
     })
   }
 
-  findAll() {
-    return `This action returns all notes`;
+  findAll(userId: number) {
+    return this.prisma.note.findMany({
+      where: {
+        userId: userId
+      }
+    })
   }
 
   findOne(id: number) {

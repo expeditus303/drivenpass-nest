@@ -29,8 +29,8 @@ export class NotesController {
   }
 
   @Get()
-  findAll() {
-    return this.notesService.findAll();
+  findAll(@User() authenticatedUser: JwtPayload) {
+    return this.notesService.findAll(authenticatedUser);
   }
 
   @Get(':id')
