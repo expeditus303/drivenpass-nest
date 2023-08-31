@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CredentialsModule } from './credentials/credentials.module';
 import { JwtModule } from '@nestjs/jwt';
 import { NotesModule } from './notes/notes.module';
+import { CardsModule } from './cards/cards.module';
 
 @Global()
 @Module({
@@ -19,6 +20,7 @@ import { NotesModule } from './notes/notes.module';
       secret: process.env.JWT_SECRET_KEY,
     }),
     NotesModule,
+    CardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
