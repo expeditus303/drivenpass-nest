@@ -34,8 +34,8 @@ export class CredentialsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.credentialsService.findOne(+id);
+  findOne(@Param('id') id: string, @User() user: JwtPayload) {
+    return this.credentialsService.findOne(+id, user);
   }
 
   @Patch(':id')

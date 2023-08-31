@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateCredentialDto,
   ProcessedCredentialDto,
@@ -56,8 +61,17 @@ export class CredentialsService {
     return userCredentialsDecrypted;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} credential`;
+  async findOne(id: number, user: JwtPayload) {
+    const credential = await this.credentialsRepository.findOne(id);
+
+    if (!credential) throw new NotFoundException();
+
+    if (credential.userId !== user.id) throw new ForbiddenException();
+
+    const password = await decrypt(credential.encryptedPassword);
+
+    const { encryptedPassword, ...rest } = credential;
+    return { ...rest, password };
   }
 
   update(id: number, updateCredentialDto: UpdateCredentialDto) {
