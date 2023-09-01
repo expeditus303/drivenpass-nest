@@ -52,15 +52,14 @@ export class CardsRepository {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
-  }
-
-  update(id: number, updateCardDto: UpdateCardDto) {
-    return `This action updates a #${id} card`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} card`;
+  remove(id: number, userId: number) {
+    return this.prisma.card.delete({
+      where: {
+        id: id,
+        AND: {
+          userId: userId,
+        },
+      },
+    });
   }
 }

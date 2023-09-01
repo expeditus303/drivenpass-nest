@@ -63,8 +63,14 @@ export class CardsService {
     return this.decryptCard(userCard);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} card`;
+  async remove(id: number, authenticatedUser: JwtPayload) {
+    const userCard = await this.getUserCards(id, authenticatedUser);
+
+    await this.cardsRepository.remove(id, authenticatedUser.id);
+
+    return {
+      message: `Card '${userCard.title}' successfully removed.`,
+    };
   }
 
   private transformToProcessedDto(
