@@ -53,8 +53,8 @@ model Card {
   cardHolder          String
   encryptedCardNumber String
   encryptedCVC        String
-  expiryMonth         Int
-  expiryYear          Int
+  expiryMonth         String
+  expiryYear          String
   encryptedPassword   String
   isVirtual           Boolean  @default(false)
   cardType            CardType
