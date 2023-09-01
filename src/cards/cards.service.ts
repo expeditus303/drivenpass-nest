@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCardDto, ProcessedCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { CardsRepository } from './cards.repository';
@@ -47,43 +47,20 @@ export class CardsService {
   }
 
   async findAll(authenticatedUser: JwtPayload) {
-    const userCards = await this.cardsRepository.findAll(
-      authenticatedUser.id,
-    );
-
+    const userCards = await this.cardsRepository.findAll(authenticatedUser.id);
+  
     const userCardsDecrypted = await Promise.all(
       userCards.map(async (card) => {
-        try {
-          const decryptedCardNumber = await decrypt(card.encryptedCardNumber);
-          const decryptedCVC = await decrypt(card.encryptedCVC);
-          const decryptedPassword = await decrypt(card.encryptedPassword)
-
-          const { encryptedCardNumber, encryptedCVC, encryptedPassword, ...cardWithoutEncryption } =
-            card;
-          const decryptedCard: CreateCardDto = {
-            ...cardWithoutEncryption,
-            cardNumber: decryptedCardNumber,
-            CVC: decryptedCVC,
-            password: decryptedPassword
-          };
-          return decryptedCard;
-        } catch (error) {
-          return {
-            message: `Failed to decrypt card with title: ${card.title}`,
-          };
-        }
-      }),
+        return this.decryptCard(card);
+      })
     );
-
+  
     return userCardsDecrypted;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} card`;
-  }
-
-  update(id: number, updateCardDto: UpdateCardDto) {
-    return `This action updates a #${id} card`;
+  async findOne(id: number, authenticatedUser: JwtPayload) {
+    const userCard = await this.getUserCards(id, authenticatedUser);
+    return this.decryptCard(userCard);
   }
 
   remove(id: number) {
@@ -103,5 +80,37 @@ export class CardsService {
       encryptedCVC: encryptedCVC,
       encryptedPassword: encryptedPassword
     };
+  }
+
+  private async getUserCards(id: number, authenticatedUser: JwtPayload) {
+    const userCards = await this.cardsRepository.findById(id);
+
+    if (!userCards) throw new NotFoundException('Card not found.');
+
+    if (userCards.userId !== authenticatedUser.id)
+      throw new ForbiddenException(
+        'You do not have permission to access this card.',
+      );
+
+    return userCards;
+  }
+
+  async decryptCard(card: any): Promise<CreateCardDto> {
+    try {
+      const decryptedCardNumber = await decrypt(card.encryptedCardNumber);
+      const decryptedCVC = await decrypt(card.encryptedCVC);
+      const decryptedPassword = await decrypt(card.encryptedPassword);
+  
+      const { encryptedCardNumber, encryptedCVC, encryptedPassword, ...cardWithoutEncryption } = card;
+  
+      return {
+        ...cardWithoutEncryption,
+        cardNumber: decryptedCardNumber,
+        CVC: decryptedCVC,
+        password: decryptedPassword,
+      };
+    } catch (error) {
+      throw new Error(`Failed to decrypt card with title: ${card.title}`);
+    }
   }
 }

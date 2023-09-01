@@ -56,20 +56,7 @@ export class CredentialsService {
 
     const userCredentialsDecrypted = await Promise.all(
       userCredentials.map(async (credential) => {
-        try {
-          const decryptedPassword = await decrypt(credential.encryptedPassword);
-          const { encryptedPassword, ...credentialsWithoutEncryptedPassword } =
-            credential;
-          const decryptedCredentials = {
-            ...credentialsWithoutEncryptedPassword,
-            password: decryptedPassword,
-          };
-          return decryptedCredentials;
-        } catch (error) {
-          return {
-            message: `Failed to decrypt password for credential with title: ${credential.title}`,
-          };
-        }
+        return this.decryptCredential(credential);
       }),
     );
 
@@ -77,21 +64,12 @@ export class CredentialsService {
   }
 
   async findOne(id: number, authenticatedUser: JwtPayload) {
-    const userCredential = await this.getUserCredential(id, authenticatedUser)
-
-    const decryptedPassword = await decrypt(userCredential.encryptedPassword);
-
-    const { encryptedPassword, ...credentialWithoutEncryptedPassword } =
-      userCredential;
-    const decryptedCredential = {
-      ...credentialWithoutEncryptedPassword,
-      password: decryptedPassword,
-    };
-    return decryptedCredential;
+    const userCredential = await this.getUserCredential(id, authenticatedUser);
+    return this.decryptCredential(userCredential);
   }
 
   async remove(id: number, authenticatedUser: JwtPayload) {
-    const userCredential = await this.getUserCredential(id, authenticatedUser)
+    const userCredential = await this.getUserCredential(id, authenticatedUser);
 
     await this.credentialsRepository.remove(id, authenticatedUser.id);
 
@@ -122,5 +100,22 @@ export class CredentialsService {
       );
 
     return userCredential;
+  }
+
+  async decryptCredential(credential: any): Promise<any> {
+    try {
+      const decryptedPassword = await decrypt(credential.encryptedPassword);
+      const { encryptedPassword, ...credentialWithoutEncryptedPassword } =
+        credential;
+
+      return {
+        ...credentialWithoutEncryptedPassword,
+        password: decryptedPassword,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to decrypt password for credential with title: ${credential.title}`,
+      );
+    }
   }
 }

@@ -44,6 +44,14 @@ export class CardsRepository {
     });
   }
 
+  findById(id: number) {
+    return this.prisma.card.findFirst({
+      where: {
+        id: id,
+      },
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} card`;
   }

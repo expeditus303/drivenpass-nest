@@ -1,4 +1,9 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateNoteDto, ProcessedNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesRepository } from './notes.repository';
@@ -27,10 +32,7 @@ export class NotesService {
       encryptedText,
     );
 
-    await this.notesRepository.create(
-      processedNoteDto,
-      authenticatedUser.id,
-    );
+    await this.notesRepository.create(processedNoteDto, authenticatedUser.id);
 
     return {
       message: `Note '${createNoteDto.title}' successfully registered.`,
@@ -38,26 +40,11 @@ export class NotesService {
   }
 
   async findAll(authenticatedUser: JwtPayload) {
-    const userNotes = await this.notesRepository.findAll(
-      authenticatedUser.id,
-    );
+    const userNotes = await this.notesRepository.findAll(authenticatedUser.id);
 
     const userNotesDecrypted = await Promise.all(
       userNotes.map(async (note) => {
-        try {
-          const decryptedText = await decrypt(note.encryptedText);
-          const { encryptedText, ...notesWithoutEncryptedText } =
-            note;
-          const decryptedNotes: CreateNoteDto = {
-            ...notesWithoutEncryptedText,
-            text: decryptedText,
-          };
-          return decryptedNotes;
-        } catch (error) {
-          return {
-            message: `Failed to decrypt text for note with title: ${note.title}`,
-          };
-        }
+        return this.decryptNote(note);
       }),
     );
 
@@ -65,21 +52,12 @@ export class NotesService {
   }
 
   async findOne(id: number, authenticatedUser: JwtPayload) {
-    const userCredential = await this.getUserNotes(id, authenticatedUser)
-
-    const decryptedText = await decrypt(userCredential.encryptedText);
-
-    const { encryptedText, ...noteWithoutEncryptedText } =
-      userCredential;
-    const decryptedNote = {
-      ...noteWithoutEncryptedText,
-      text: decryptedText,
-    };
-    return decryptedNote;
+    const userNote = await this.getUserNotes(id, authenticatedUser);
+    return this.decryptNote(userNote);
   }
 
   async remove(id: number, authenticatedUser: JwtPayload) {
-    const userNote = await this.getUserNotes(id, authenticatedUser)
+    const userNote = await this.getUserNotes(id, authenticatedUser);
 
     await this.notesRepository.remove(id, authenticatedUser.id);
 
@@ -110,5 +88,21 @@ export class NotesService {
       );
 
     return userNote;
+  }
+
+  async decryptNote(note: any): Promise<CreateNoteDto> {
+    try {
+      const decryptedText = await decrypt(note.encryptedText);
+      const { encryptedText, ...noteWithoutEncryptedText } = note;
+
+      return {
+        ...noteWithoutEncryptedText,
+        text: decryptedText,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to decrypt text for note with title: ${note.title}`,
+      );
+    }
   }
 }
