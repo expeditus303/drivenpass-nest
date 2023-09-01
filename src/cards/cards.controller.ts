@@ -11,7 +11,7 @@ import {
 import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { AuthGuard } from '../users/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { JwtPayload } from '../users/entities/user.entity';
 import { User } from '../decorators/user.decorator';
 

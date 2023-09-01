@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { AuthGuard } from './auth.guard';
 
 @Module({})
-export class AuthModule {}
+export class AuthModule {
+    providers: [AuthGuard]
+}

@@ -12,7 +12,7 @@ import { CredentialsService } from './credentials.service';
 import { CreateCredentialDto } from './dto/create-credential.dto';
 import { UpdateCredentialDto } from './dto/update-credential.dto';
 import { User } from '../decorators/user.decorator';
-import { AuthGuard } from '../users/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { JwtPayload } from '../users/entities/user.entity';
 
 @UseGuards(AuthGuard)

@@ -8,6 +8,7 @@ import { CredentialsModule } from './credentials/credentials.module';
 import { JwtModule } from '@nestjs/jwt';
 import { NotesModule } from './notes/notes.module';
 import { CardsModule } from './cards/cards.module';
+import { EraseModule } from './erase/erase.module';
 
 @Global()
 @Module({
@@ -21,6 +22,7 @@ import { CardsModule } from './cards/cards.module';
     }),
     NotesModule,
     CardsModule,
+    EraseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

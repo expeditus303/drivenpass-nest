@@ -11,7 +11,7 @@ import {
 import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
-import { AuthGuard } from '../users/auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { User } from '../decorators/user.decorator';
 import { JwtPayload } from '../users/entities/user.entity';
 
