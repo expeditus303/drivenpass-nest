@@ -12,6 +12,8 @@ import { CardsService } from './cards.service';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { AuthGuard } from '../users/auth.guard';
+import { JwtPayload } from '../users/entities/user.entity';
+import { User } from '../decorators/user.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('cards')
@@ -19,13 +21,17 @@ export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
   @Post()
-  create(@Body() createCardDto: CreateCardDto) {
-    return this.cardsService.create(createCardDto);
+  create(
+    @Body() createCardDto: CreateCardDto,
+    @User() authenticatedUser: JwtPayload,
+  ) {
+    return this.cardsService.create(createCardDto, authenticatedUser);
+
   }
 
   @Get()
-  findAll() {
-    return this.cardsService.findAll();
+  findAll(@User() authenticatedUser: JwtPayload) {
+    return this.cardsService.findAll(authenticatedUser);
   }
 
   @Get(':id')

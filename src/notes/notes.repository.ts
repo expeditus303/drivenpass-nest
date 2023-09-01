@@ -17,6 +17,7 @@ export class NotesRepository {
       },
     });
   }
+  
   create(processedNoteDto: ProcessedNoteDto, userId: number) {
     return this.prisma.note.create({
       data: {

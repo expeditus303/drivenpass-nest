@@ -10,6 +10,10 @@ import {
   Length,
   Max,
   Min,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -29,6 +33,18 @@ const MONTHS = [
 ];
 const CARD_TYPES = ['CREDIT', 'DEBIT', 'CREDIT_DEBIT'];
 
+@ValidatorConstraint({ async: false })
+export class IsYearGreaterThan implements ValidatorConstraintInterface {
+  validate(year: string, args: ValidationArguments) {
+    const comparisonYear = args.constraints[0];
+    return parseInt(year) >= comparisonYear;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return `Expiry year should be greater than ${args.constraints[0]}`;
+  }
+}
+
 export class BaseCardDto {
   @IsString()
   @IsNotEmpty()
@@ -44,7 +60,7 @@ export class BaseCardDto {
   expiryMonth: string;
 
   @IsNumberString({ no_symbols: true })
-  @Min(CURRENT_YEAR, { message: '' })
+  @Validate(IsYearGreaterThan, [CURRENT_YEAR])
   @Length(4, 4)
   @IsNotEmpty()
   expiryYear: string;
