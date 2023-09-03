@@ -8,11 +8,8 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SignUpDto } from './dto/create-user.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
-// import { UseGuards } from '@nestjs/common';
-// import { AuthGuard } from '../auth.guard';
-// import { request } from 'express';
 
 @Controller('users')
 export class UsersController {

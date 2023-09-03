@@ -17,9 +17,12 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:load-envs": "dotenv -e .env.test",
+    "test:prisma": "npm run test:load-envs prisma migrate deploy",
+    "test:e2e": "npm run test:load-envs -- jest -- --runInBand --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.1.0",
@@ -32,6 +35,8 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "cryptr": "^6.2.0",
+    "dotenv-cli": "^7.3.0",
+    "generate-password": "^1.7.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.1.13",

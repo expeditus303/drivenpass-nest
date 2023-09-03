@@ -8,4 +8,8 @@ export class SignInDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  constructor(params?: Partial<SignInDto>) {
+    if (params) Object.assign(this, params);
+  }
 }
