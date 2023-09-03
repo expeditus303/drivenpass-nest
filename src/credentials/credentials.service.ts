@@ -8,10 +8,8 @@ import {
   CreateCredentialDto,
   ProcessedCredentialDto,
 } from './dto/create-credential.dto';
-import { UpdateCredentialDto } from './dto/update-credential.dto';
 import { CredentialsRepository } from './credentials.repository';
 import { JwtPayload } from '../users/entities/user.entity';
-import Cryptr from 'cryptr';
 import { decrypt, encrypt } from '../utils/encryption.utils';
 
 @Injectable()

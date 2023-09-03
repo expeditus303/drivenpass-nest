@@ -3,7 +3,6 @@ import { faker } from '@faker-js/faker';
 import { passwordGenerator } from '../utils/password-generator.util';
 import * as bcrypt from 'bcrypt';
 
-
 export class UsersFactory {
   private email: string;
   private password: string;
@@ -31,7 +30,7 @@ export class UsersFactory {
 
   randomInfo() {
     this.email = faker.internet.email();
-    this.password = passwordGenerator()
+    this.password = passwordGenerator();
     return this;
   }
 
