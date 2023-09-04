@@ -88,6 +88,11 @@ export class CreateCardDto extends BaseCardDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  constructor(params?: Partial<CreateCardDto>) {
+    super(); 
+    if (params) Object.assign(this, params);
+  }
 }
 
 export class ProcessedCardDto extends BaseCardDto {

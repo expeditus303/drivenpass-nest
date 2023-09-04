@@ -1,8 +1,5 @@
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { faker } from '@faker-js/faker';
-import { passwordGenerator } from '../utils/password-generator.util';
-import * as bcrypt from 'bcrypt';
-import { ProcessedCredentialDto } from '../../src/credentials/dto/create-credential.dto';
 import { encrypt } from '../../src/utils/encryption.utils';
 
 export class CredentialsFactory {
@@ -56,7 +53,7 @@ export class CredentialsFactory {
   }
 
   randomInfo() {
-    this.title = faker.word.words()
+    this.title = faker.lorem.sentence();
     this.url = faker.internet.url();
     this.username = faker.internet.userName();
     this.password = faker.internet.password();

@@ -109,54 +109,80 @@ describe('Credentials (e2e)', () => {
   });
 
   describe('GET =>  /credentials', () => {
-    it('should return user credentials', async () => {
+    it('should return an empty array when user has no credentials', async () => {
       const authUtility = new AuthUtility(app, prisma);
-      const { user, token } = await authUtility.signIn();
+      const { token } = await authUtility.signIn();
 
-      const credential1 = await new CredentialsFactory(prisma)
-        .withUserId(user.id)
-        .randomInfo()
-        .persist();
-
-      const credential2 = await new CredentialsFactory(prisma)
-        .withUserId(user.id)
-        .randomInfo()
-        .persist();
-
-      const { body: credentials } = await request(app.getHttpServer())
+      const { body: fetchedCredentials } = await request(app.getHttpServer())
         .get('/credentials')
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.OK);
 
-      expect(credentials).toHaveLength(2);
+      expect(fetchedCredentials).toEqual([]);
+    });
 
-      const credential_1 = credentials[0];
-      const credential_2 = credentials[1];
+    it('should return user credentials', async () => {
+      const authUtility = new AuthUtility(app, prisma);
+      const { user, token } = await authUtility.signIn();
 
-      const decryptedPassword1 = await decrypt(credential1.encryptedPassword);
-      const decryptedPassword2 = await decrypt(credential2.encryptedPassword);
+      const credentialsToCreate = [1, 2];
+      const createdCredentials = await Promise.all(
+        credentialsToCreate.map(async () => {
+          return await new CredentialsFactory(prisma)
+            .withUserId(user.id)
+            .randomInfo()
+            .persist();
+        }),
+      );
 
-      expect(credential_1).toEqual({
-        id: expect.any(Number),
-        userId: user.id,
-        title: credential1.title,
-        url: credential1.url,
-        username: credential1.username,
-        password: decryptedPassword1,
-      });
+      const { body: fetchedCredentials } = await request(app.getHttpServer())
+        .get('/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
 
-      expect(credential_2).toEqual({
-        id: expect.any(Number),
-        userId: user.id,
-        title: credential2.title,
-        url: credential2.url,
-        username: credential2.username,
-        password: decryptedPassword2,
-      });
+      expect(fetchedCredentials).toHaveLength(credentialsToCreate.length);
+
+      for (let i = 0; i < createdCredentials.length; i++) {
+        const decryptedPassword = await decrypt(
+          createdCredentials[i].encryptedPassword,
+        );
+
+        expect(fetchedCredentials[i]).toMatchObject({
+          id: expect.any(Number),
+          userId: user.id,
+          title: createdCredentials[i].title,
+          url: createdCredentials[i].url,
+          username: createdCredentials[i].username,
+          password: decryptedPassword,
+        });
+      }
     });
   });
 
   describe('GET =>  /credentials/:id', () => {
+    it("should return not authorized when user tries to access another user's credential", async () => {
+      const authUtility = new AuthUtility(app, prisma);
+
+      const { user: user1, token: token1 } = await authUtility.signIn();
+
+      const credential = await new CredentialsFactory(prisma)
+        .withUserId(user1.id)
+        .randomInfo()
+        .persist();
+
+      const { token: token2 } = await authUtility.signIn();
+
+      await request(app.getHttpServer())
+        .get(`/credentials/${credential.id}`)
+        .set('Authorization', `Bearer ${token2}`)
+        .expect(HttpStatus.FORBIDDEN)
+        .expect({
+          message: 'You do not have permission to access this credential.',
+          error: 'Forbidden',
+          statusCode: 403
+        });
+    });
+
     it('should return not found for non-existent credential ID', async () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
@@ -207,6 +233,51 @@ describe('Credentials (e2e)', () => {
   });
 
   describe('DELETE =>  /credentials/:id', () => {
+    it("should return not authorized when user tries to delete another user's credential", async () => {
+      const authUtility = new AuthUtility(app, prisma);
+
+      const { user: user1, token: token1 } = await authUtility.signIn();
+
+      const credential = await new CredentialsFactory(prisma)
+        .withUserId(user1.id)
+        .randomInfo()
+        .persist();
+
+      const { token: token2 } = await authUtility.signIn();
+
+      await request(app.getHttpServer())
+        .delete(`/credentials/${credential.id}`)
+        .set('Authorization', `Bearer ${token2}`)
+        .expect(HttpStatus.FORBIDDEN)
+        .expect({
+          message: 'You do not have permission to access this credential.',
+          error: 'Forbidden',
+          statusCode: 403
+        });
+    });
+
+    it('should return not found for non-existent credential ID', async () => {
+      const authUtility = new AuthUtility(app, prisma);
+      const { user, token } = await authUtility.signIn();
+
+      const credential = await new CredentialsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+
+      const nonExistentId = credential.id + 1;
+
+      await request(app.getHttpServer())
+        .delete(`/credentials/${nonExistentId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect({
+          message: 'Credential not found.',
+          error: 'Not Found',
+          statusCode: 404,
+        });
+    });
+
     it('should delete user credential by id', async () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();

@@ -12,6 +12,11 @@ export class CreateNoteDto extends BaseNoteDto {
     @IsString()
     @IsNotEmpty()
     text: string 
+
+    constructor(params?: Partial<CreateNoteDto>) {
+        super(); 
+        if (params) Object.assign(this, params);
+      }
 }
 
 export class ProcessedNoteDto extends BaseNoteDto {
