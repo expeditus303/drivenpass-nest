@@ -157,6 +157,28 @@ describe('Credentials (e2e)', () => {
   });
 
   describe('GET =>  /credentials/:id', () => {
+    it('should return not found for non-existent credential ID', async () => {
+      const authUtility = new AuthUtility(app, prisma);
+      const { user, token } = await authUtility.signIn();
+
+      const credential = await new CredentialsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+
+      const nonExistentId = credential.id + 1;
+
+      await request(app.getHttpServer())
+        .get(`/credentials/${nonExistentId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND)
+        .expect({
+          message: 'Credential not found.',
+          error: 'Not Found',
+          statusCode: 404,
+        });
+    });
+
     it('should return user credential by id', async () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
@@ -194,7 +216,7 @@ describe('Credentials (e2e)', () => {
         .randomInfo()
         .persist();
 
-      const { body: response } = await request(app.getHttpServer())
+      await request(app.getHttpServer())
         .delete(`/credentials/${credential.id}`)
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.OK)
@@ -202,9 +224,10 @@ describe('Credentials (e2e)', () => {
           message: `Credential '${credential.title}' successfully removed.`,
         });
 
-
-        const credentials = await prisma.credential.findUnique({where: {id: credential.id}});
-        expect(credentials).toBe(null)
+      const credentials = await prisma.credential.findUnique({
+        where: { id: credential.id },
+      });
+      expect(credentials).toBe(null);
     });
   });
 
