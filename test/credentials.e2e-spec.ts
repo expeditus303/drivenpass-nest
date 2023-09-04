@@ -9,7 +9,7 @@ import { SignUpDto } from '../src/users/dto/sign-up.dto';
 import { UsersFactory } from './factories/users.factory';
 import { passwordGenerator } from './utils/password-generator.util';
 import { faker } from '@faker-js/faker';
-import { User } from '@prisma/client';
+import { Credential, User } from '@prisma/client';
 import { SignInDto } from '../src/users/dto/sign-in.dto';
 import * as jwt from 'jsonwebtoken';
 import { CreateCredentialDto } from '../src/credentials/dto/create-credential.dto';
@@ -125,35 +125,38 @@ describe('Credentials (e2e)', () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
 
-      const credentialsToCreate = [1, 2];
-      const createdCredentials = await Promise.all(
-        credentialsToCreate.map(async () => {
-          return await new CredentialsFactory(prisma)
-            .withUserId(user.id)
-            .randomInfo()
-            .persist();
-        }),
-      );
+      const numberOfCredentialsToCreate = 2;
+      const createdCredentials: Credential[] = [];
+
+      const credential_1 = await new CredentialsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+      const credential_2 = await new CredentialsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+
+      createdCredentials.push(credential_1, credential_2);
 
       const { body: fetchedCredentials } = await request(app.getHttpServer())
         .get('/credentials')
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.OK);
 
-      expect(fetchedCredentials).toHaveLength(credentialsToCreate.length);
+      expect(fetchedCredentials).toHaveLength(numberOfCredentialsToCreate);
 
       for (let i = 0; i < createdCredentials.length; i++) {
-        const decryptedPassword = await decrypt(
+        const decryptedPasswords = await decrypt(
           createdCredentials[i].encryptedPassword,
         );
-
         expect(fetchedCredentials[i]).toMatchObject({
           id: expect.any(Number),
           userId: user.id,
           title: createdCredentials[i].title,
           url: createdCredentials[i].url,
           username: createdCredentials[i].username,
-          password: decryptedPassword,
+          password: decryptedPasswords,
         });
       }
     });
@@ -179,7 +182,7 @@ describe('Credentials (e2e)', () => {
         .expect({
           message: 'You do not have permission to access this credential.',
           error: 'Forbidden',
-          statusCode: 403
+          statusCode: 403,
         });
     });
 
@@ -252,7 +255,7 @@ describe('Credentials (e2e)', () => {
         .expect({
           message: 'You do not have permission to access this credential.',
           error: 'Forbidden',
-          statusCode: 403
+          statusCode: 403,
         });
     });
 

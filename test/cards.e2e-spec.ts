@@ -173,21 +173,17 @@ describe('Cards (e2e)', () => {
       expect(fetchedCards).toEqual([]);
     });
 
-    it('should return user notes', async () => {
+    it('should return user cards', async () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
 
-      const numberOfCardsToCreate = 2;
-      const createdCards = await Promise.all(
-        Array(numberOfCardsToCreate)
-          .fill(0)
-          .map(async () => {
-            return await new CardsFactory(prisma)
-              .withUserId(user.id)
-              .randomInfo()
-              .persist();
-          }),
-      );
+      const numberOfCardsToCreate = 2
+      const createdCards = []
+
+      const card_1 = await new CardsFactory(prisma).withUserId(user.id).randomInfo().persist()
+      const cart_2 = await new CardsFactory(prisma).withUserId(user.id).randomInfo().persist()
+
+      createdCards.push(card_1, cart_2)
 
       const { body: fetchedCards } = await request(app.getHttpServer())
         .get('/cards')

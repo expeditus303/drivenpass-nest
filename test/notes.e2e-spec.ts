@@ -115,36 +115,38 @@ describe('Notes (e2e)', () => {
     it('should return user notes', async () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
-    
-      const numberOfNotesToCreate = 2;  
-      const createdNotes = await Promise.all(
-        Array(numberOfNotesToCreate).fill(0).map(async () => {
-          return await new NotesFactory(prisma)
-            .withUserId(user.id)
-            .randomInfo()
-            .persist();
-        }),
-      );
-    
+
+      const numberOfNotesToCreate = 2;
+      const createdNotes = [];
+
+      const note_1 = await new NotesFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+      const note_2 = await new NotesFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+
+      createdNotes.push(note_1, note_2);
+
       const { body: fetchedNotes } = await request(app.getHttpServer())
         .get('/notes')
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.OK);
-    
 
       expect(fetchedNotes).toHaveLength(numberOfNotesToCreate);
-    
-      createdNotes.forEach(async (createdNote, index) => {
-        const decryptedText = await decrypt(createdNote.encryptedText);
-        expect(fetchedNotes[index]).toMatchObject({
+
+      for (let i = 0; i < createdNotes.length; i++) {
+        const decryptedText = await decrypt(createdNotes[i].encryptedText);
+        expect(fetchedNotes[i]).toMatchObject({
           id: expect.any(Number),
           userId: user.id,
-          title: createdNote.title,
+          title: createdNotes[i].title,
           text: decryptedText,
         });
-      });
+      }
     });
-    
   });
 
   describe('GET =>  /notes/:id', () => {
@@ -167,7 +169,7 @@ describe('Notes (e2e)', () => {
         .expect({
           message: 'You do not have permission to access this note.',
           error: 'Forbidden',
-          statusCode: 403
+          statusCode: 403,
         });
     });
 
@@ -238,7 +240,7 @@ describe('Notes (e2e)', () => {
         .expect({
           message: 'You do not have permission to access this note.',
           error: 'Forbidden',
-          statusCode: 403
+          statusCode: 403,
         });
     });
 
