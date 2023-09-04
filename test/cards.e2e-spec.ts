@@ -196,27 +196,28 @@ describe('Cards (e2e)', () => {
 
       expect(fetchedCards).toHaveLength(numberOfCardsToCreate);
 
-      createdCards.forEach(async (createdCard, index) => {
-        const decryptedCardNumber = await decrypt(
-          createdCard.encryptedCardNumber,
-        );
-        const decryptedCVC = await decrypt(createdCard.encryptedCVC);
-        const decryptedPassword = await decrypt(createdCard.encryptedPassword);
+      for (let i = 0; i < createdCards.length; i++) {
+        const [decryptedCardNumber, decryptedCVC, decryptedPassword] =
+          await Promise.all([
+            decrypt(createdCards[i].encryptedCardNumber),
+            decrypt(createdCards[i].encryptedCVC),
+            decrypt(createdCards[i].encryptedPassword),
+          ]);
 
-        expect(fetchedCards[index]).toMatchObject({
+        expect(fetchedCards[i]).toMatchObject({
           id: expect.any(Number),
           userId: user.id,
-          title: createdCard.title,
-          cardHolder: createdCard.cardHolder,
+          title: createdCards[i].title,
+          cardHolder: createdCards[i].cardHolder,
           cardNumber: decryptedCardNumber,
           CVC: decryptedCVC,
-          expiryMonth: createdCard.expiryMonth,
-          expiryYear: createdCard.expiryYear,
+          expiryMonth: createdCards[i].expiryMonth,
+          expiryYear: createdCards[i].expiryYear,
           password: decryptedPassword,
-          isVirtual: createdCard.isVirtual,
-          cardType: createdCard.cardType,
+          isVirtual: createdCards[i].isVirtual,
+          cardType: createdCards[i].cardType,
         });
-      });
+      }
     });
   });
 
