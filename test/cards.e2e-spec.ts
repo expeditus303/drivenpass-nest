@@ -7,7 +7,7 @@ import { DatabaseCleaner } from './utils/database-cleaner.util';
 import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 
 import { faker } from '@faker-js/faker';
-import { decrypt, encrypt } from '../src/utils/encryption.utils';
+import { decrypt } from '../src/utils/encryption.utils';
 import { AuthUtility } from './utils/sign-In.util';
 import { CardsFactory } from './factories/cards.factory';
 import { CreateCardDto } from '../src/cards/dto/create-card.dto';
@@ -177,13 +177,19 @@ describe('Cards (e2e)', () => {
       const authUtility = new AuthUtility(app, prisma);
       const { user, token } = await authUtility.signIn();
 
-      const numberOfCardsToCreate = 2
-      const createdCards = []
+      const numberOfCardsToCreate = 2;
+      const createdCards = [];
 
-      const card_1 = await new CardsFactory(prisma).withUserId(user.id).randomInfo().persist()
-      const cart_2 = await new CardsFactory(prisma).withUserId(user.id).randomInfo().persist()
+      const card_1 = await new CardsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
+      const cart_2 = await new CardsFactory(prisma)
+        .withUserId(user.id)
+        .randomInfo()
+        .persist();
 
-      createdCards.push(card_1, cart_2)
+      createdCards.push(card_1, cart_2);
 
       const { body: fetchedCards } = await request(app.getHttpServer())
         .get('/cards')

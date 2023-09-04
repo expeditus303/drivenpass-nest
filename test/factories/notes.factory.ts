@@ -39,8 +39,8 @@ export class NotesFactory {
   }
 
   randomInfo() {
-    this.title = faker.lorem.sentence(); 
-    this.text = faker.lorem.paragraph(); 
+    this.title = faker.lorem.sentence();
+    this.text = faker.lorem.paragraph();
     return this;
   }
 

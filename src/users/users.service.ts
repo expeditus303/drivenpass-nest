@@ -12,7 +12,6 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
-
   private EXPIRATION_TIME = '7 days';
   private ISSUER = 'DrivenPass';
   private AUDIENCE = 'users';

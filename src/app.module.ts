@@ -26,6 +26,6 @@ import { EraseModule } from './erase/erase.module';
   ],
   controllers: [AppController],
   providers: [AppService],
-  exports: [JwtModule]
+  exports: [JwtModule],
 })
 export class AppModule {}

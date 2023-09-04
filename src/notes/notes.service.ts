@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateNoteDto, ProcessedNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
 import { NotesRepository } from './notes.repository';
 import { JwtPayload } from '../users/entities/user.entity';
 import { decrypt, encrypt } from '../utils/encryption.utils';

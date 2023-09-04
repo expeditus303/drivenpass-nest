@@ -234,7 +234,6 @@ describe('Users (e2e)', () => {
           expect(res.body).toHaveProperty('access_token');
         });
 
-
       const decodedToken = jwt.decode(response.body.access_token);
 
       // Check if the decoded token has the expected structure

@@ -23,6 +23,4 @@ export class EraseRepository {
       },
     });
   }
-
-  remove(eraseDto: EraseDto, authenticatedUser: JwtPayload) {}
 }

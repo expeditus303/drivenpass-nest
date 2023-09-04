@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCardDto, ProcessedCardDto } from './dto/create-card.dto';
-import { UpdateCardDto } from './dto/update-card.dto';
+import { ProcessedCardDto } from './dto/create-card.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class CardsRepository {
-
   constructor(private readonly prisma: PrismaService) {}
 
   findTitleByUser(title: string, userId: number) {
@@ -31,7 +29,7 @@ export class CardsRepository {
         expiryYear: processedCardDto.expiryYear,
         encryptedPassword: processedCardDto.encryptedPassword,
         isVirtual: processedCardDto.isVirtual,
-        cardType: processedCardDto.cardType
+        cardType: processedCardDto.cardType,
       },
     });
   }

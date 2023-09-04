@@ -86,7 +86,7 @@ export class CardsFactory {
       expiryYear: this.expiryYear,
       encryptedPassword: encryptedPassword,
       isVirtual: this.isVirtual,
-      cardType: this.cardType
+      cardType: this.cardType,
     };
   }
 
@@ -95,11 +95,16 @@ export class CardsFactory {
     const cardTypes = ['CREDIT', 'DEBIT', 'CREDIT_DEBIT'];
 
     this.title = faker.lorem.sentence();
-    this.cardHolder = faker.person.firstName() + " " + faker.person.lastName();
+    this.cardHolder = faker.person.firstName() + ' ' + faker.person.lastName();
     this.cardNumber = faker.finance.creditCardNumber();
     this.CVC = faker.finance.creditCardCVV();
-    this.expiryMonth = String(faker.number.int({ min: 1, max: 12 })).padStart(2, '0');
-    this.expiryYear = String(faker.number.int({ min: CURRENT_YEAR, max: CURRENT_YEAR + 50 }));
+    this.expiryMonth = String(faker.number.int({ min: 1, max: 12 })).padStart(
+      2,
+      '0',
+    );
+    this.expiryYear = String(
+      faker.number.int({ min: CURRENT_YEAR, max: CURRENT_YEAR + 50 }),
+    );
     this.password = faker.internet.password();
     this.isVirtual = faker.datatype.boolean();
     this.cardType = faker.helpers.arrayElement(cardTypes) as CardType;

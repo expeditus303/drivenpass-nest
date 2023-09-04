@@ -3,5 +3,5 @@ import { AuthGuard } from './auth.guard';
 
 @Module({})
 export class AuthModule {
-    providers: [AuthGuard]
+  providers: [AuthGuard];
 }

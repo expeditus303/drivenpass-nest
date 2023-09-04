@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ProcessedCredentialDto } from './dto/create-credential.dto';
-import { UpdateCredentialDto } from './dto/update-credential.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -14,7 +13,7 @@ export class CredentialsRepository {
         title: processedCredentialDto.title,
         url: processedCredentialDto.url,
         username: processedCredentialDto.username,
-        encryptedPassword: processedCredentialDto.encryptedPassword 
+        encryptedPassword: processedCredentialDto.encryptedPassword,
       },
     });
   }
@@ -33,17 +32,17 @@ export class CredentialsRepository {
   findAll(userId: number) {
     return this.prisma.credential.findMany({
       where: {
-        userId: userId
-      }
-    })
+        userId: userId,
+      },
+    });
   }
 
   findById(id: number) {
     return this.prisma.credential.findFirst({
       where: {
-        id: id
-      }
-    })
+        id: id,
+      },
+    });
   }
 
   remove(id: number, userId: number) {

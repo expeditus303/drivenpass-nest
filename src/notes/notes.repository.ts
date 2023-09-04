@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNoteDto, ProcessedNoteDto } from './dto/create-note.dto';
-import { UpdateNoteDto } from './dto/update-note.dto';
+import { ProcessedNoteDto } from './dto/create-note.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -17,7 +16,7 @@ export class NotesRepository {
       },
     });
   }
-  
+
   create(processedNoteDto: ProcessedNoteDto, userId: number) {
     return this.prisma.note.create({
       data: {

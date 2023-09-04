@@ -1,13 +1,16 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCardDto, ProcessedCardDto } from './dto/create-card.dto';
-import { UpdateCardDto } from './dto/update-card.dto';
 import { CardsRepository } from './cards.repository';
 import { JwtPayload } from '../users/entities/user.entity';
 import { decrypt, encrypt } from '../utils/encryption.utils';
 
 @Injectable()
 export class CardsService {
-
   constructor(private readonly cardsRepository: CardsRepository) {}
 
   async create(createCardDto: CreateCardDto, authenticatedUser: JwtPayload) {
@@ -27,19 +30,14 @@ export class CardsService {
 
     const encryptedPassword = await encrypt(createCardDto.password);
 
-
-
     const processedCardDto: ProcessedCardDto = this.transformToProcessedDto(
       createCardDto,
       encryptedCardNumber,
       encryptedCVC,
-      encryptedPassword
+      encryptedPassword,
     );
 
-    await this.cardsRepository.create(
-      processedCardDto,
-      authenticatedUser.id,
-    );
+    await this.cardsRepository.create(processedCardDto, authenticatedUser.id);
 
     return {
       message: `Card '${createCardDto.title}' successfully registered.`,
@@ -48,13 +46,13 @@ export class CardsService {
 
   async findAll(authenticatedUser: JwtPayload) {
     const userCards = await this.cardsRepository.findAll(authenticatedUser.id);
-  
+
     const userCardsDecrypted = await Promise.all(
       userCards.map(async (card) => {
         return this.decryptCard(card);
-      })
+      }),
     );
-  
+
     return userCardsDecrypted;
   }
 
@@ -77,14 +75,15 @@ export class CardsService {
     createCardDto: CreateCardDto,
     encryptedCardNumber: string,
     encryptedCVC: string,
-    encryptedPassword: string
+    encryptedPassword: string,
   ): ProcessedCardDto {
-    const { cardNumber, CVC, password, ...CardWithoutDecryptedData } = createCardDto;
+    const { cardNumber, CVC, password, ...CardWithoutDecryptedData } =
+      createCardDto;
     return {
       ...CardWithoutDecryptedData,
       encryptedCardNumber: encryptedCardNumber,
       encryptedCVC: encryptedCVC,
-      encryptedPassword: encryptedPassword
+      encryptedPassword: encryptedPassword,
     };
   }
 
@@ -106,9 +105,14 @@ export class CardsService {
       const decryptedCardNumber = await decrypt(card.encryptedCardNumber);
       const decryptedCVC = await decrypt(card.encryptedCVC);
       const decryptedPassword = await decrypt(card.encryptedPassword);
-  
-      const { encryptedCardNumber, encryptedCVC, encryptedPassword, ...cardWithoutEncryption } = card;
-  
+
+      const {
+        encryptedCardNumber,
+        encryptedCVC,
+        encryptedPassword,
+        ...cardWithoutEncryption
+      } = card;
+
       return {
         ...cardWithoutEncryption,
         cardNumber: decryptedCardNumber,
